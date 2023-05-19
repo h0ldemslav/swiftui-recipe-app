@@ -20,7 +20,7 @@ struct SearchView: View {
                 .padding(.leading, 15)
                 .padding(.top, 15)
             
-            SearchForm(recipe: $searchViewModel.searchRecipe)
+            SearchForm(recipe: $searchViewModel.searchRecipe, viewModel: searchViewModel)
         }
     }
 }
@@ -28,9 +28,11 @@ struct SearchView: View {
 struct SearchForm: View {
     
     @Binding var recipe: SearchRecipe
+    @StateObject var viewModel: SearchViewModel
     
     var body: some View {
         ZStack {
+            
             Form {
                 Section(content: {
                     TextField("Lasagna", text: $recipe.name)
@@ -43,7 +45,7 @@ struct SearchForm: View {
                 
                 Section(content: {
                     Picker("Type", selection: $recipe.selectedTypeOfMeal) {
-                        ForEach(MealType.allCases, id: \.self) { type in
+                        ForEach(_MealType.allCases, id: \.self) { type in
                             Text(type.rawValue)
                         }
                     }
@@ -55,6 +57,7 @@ struct SearchForm: View {
                     }
                     
                     Stepper {
+                        // TODO: Change calories to range according to Edamam API docs
                         Text("Calories: \(recipe.calories)")
                     } onIncrement: {
                         recipe.incrementCalories()
@@ -69,11 +72,24 @@ struct SearchForm: View {
             }
             
             VStack {
-                Image("EdamamAttributionLarge")
-                    .padding(.vertical)
-                
                 Button(action: {
-                    // TODO: viewmodel api call and navigate to Search Results
+                    let query: [String: String] = [
+                        "q": recipe.name,
+                        "mealType": recipe.selectedTypeOfMeal.rawValue,
+                        "diet": recipe.selectedDiet.rawValue,
+                        "calories": String(recipe.calories)
+                    ]
+                    
+                    Task {
+                        do {
+                            let data = try await viewModel.getAllRecipes(query: query)
+                            print(data?.first)
+                        } catch {
+                            print(error)
+                        }
+                    }
+
+                    
                 }, label: {
                     Text("Search")
                         .foregroundColor(.black)
@@ -84,10 +100,18 @@ struct SearchForm: View {
                         .cornerRadius(10)
                         .shadow(radius: 5)
                 })
+                .padding(.top, 25)
+                
+                Image("EdamamAttributionLarge")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 50)
+                    .padding(.top, 8)
                 
             }
             .padding(.top, 40)
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 }
 

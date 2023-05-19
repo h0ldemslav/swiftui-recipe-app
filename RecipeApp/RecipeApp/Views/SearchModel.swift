@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MealType: String, CaseIterable {
+enum _MealType: String, CaseIterable {
     case Breakfast
     case Dinner
     case Lunch
@@ -27,7 +27,8 @@ enum DietType: String, CaseIterable {
 struct SearchRecipe {
     var name: String = ""
     var selectedDiet: DietType = .HighProtein
-    var selectedTypeOfMeal: MealType = .Lunch
+    var selectedTypeOfMeal: _MealType = .Lunch
+    // TODO: Change calories to range according to Edamam API docs
     var calories: Int32 = 100
         
     mutating func incrementCalories() {

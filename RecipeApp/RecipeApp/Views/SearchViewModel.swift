@@ -11,7 +11,7 @@ class SearchViewModel: ObservableObject {
     @Published var searchRecipe: SearchRecipe = SearchRecipe()
     let apiManager = APIManager()
     
-    func getAllRecipes(query: [String: String]) async throws -> [Recipe]? {
+    func getAllRecipes(query: [String: String]) async throws -> [_Recipe]? {
         let recipesURLAddress = URL(string: "https://api.edamam.com/api/recipes/v2")
         
         if var url = recipesURLAddress {
@@ -26,7 +26,37 @@ class SearchViewModel: ObservableObject {
 
             do {
                 let response: Response = try await apiManager.request(request)
-                return response.hits.map { $0.recipe }
+                var recipes: [_Recipe] = []
+                
+                response.hits?.forEach { hit in
+                    if let recipe = hit.recipe {
+                        recipes.append(_Recipe(
+                            label: recipe.label ?? "Unknown recipe",
+                            healthLabels: recipe.healthLabels,
+                            ingredients: nil,
+                            instructions: recipe.instructions,
+                            image: recipe.image,
+                            source: recipe.source,
+                            url: recipe.url,
+                            shareAs: recipe.shareAs,
+                            dietLabels: recipe.dietLabels,
+                            cautions: recipe.cautions,
+                            ingredientLines: recipe.ingredientLines,
+                            calories: recipe.calories,
+                            glycemicIndex: recipe.glycemicIndex,
+                            totalCO2Emissions: recipe.totalCO2Emissions,
+                            co2EmissionsClass: recipe.co2EmissionsClass,
+                            totalWeight: recipe.totalWeight)
+                        )
+                    
+                    }
+
+                }
+
+                
+                
+                return recipes
+                
             } catch {
                 print(error)
             }

@@ -20,23 +20,24 @@ struct SearchView: View {
                 .padding(.leading, 15)
                 .padding(.top, 15)
             
-            SearchForm(recipe: $searchViewModel.searchRecipe, viewModel: searchViewModel)
+            SearchForm(viewModel: searchViewModel, recipe: $searchViewModel.searchRecipe)
         }
     }
 }
 
 struct SearchForm: View {
     
+    @ObservedObject var viewModel: SearchViewModel
     @Binding var recipe: SearchRecipe
-    @StateObject var viewModel: SearchViewModel
-    
+    @State var isSearchResultPresented: Bool = false
+    @State var recipes: [_Recipe]?
+
     var body: some View {
         ZStack {
             
             Form {
                 Section(content: {
                     TextField("Lasagna", text: $recipe.name)
-                    
                 }, header: {
                     Text("Name")
                         .font(.headline)
@@ -57,8 +58,7 @@ struct SearchForm: View {
                     }
                     
                     Stepper {
-                        // TODO: Change calories to range according to Edamam API docs
-                        Text("Calories: \(recipe.calories)")
+                        Text("Calories: \(recipe.caloriesStart)-\(recipe.caloriesEnd)")
                     } onIncrement: {
                         recipe.incrementCalories()
                     } onDecrement: {
@@ -73,21 +73,26 @@ struct SearchForm: View {
             
             VStack {
                 Button(action: {
-                    let query: [String: String] = [
-                        "q": recipe.name,
-                        "mealType": recipe.selectedTypeOfMeal.rawValue,
-                        "diet": recipe.selectedDiet.rawValue,
-                        "calories": String(recipe.calories)
-                    ]
-                    
-                    Task {
-                        do {
-                            let data = try await viewModel.getAllRecipes(query: query)
-                            print(data?.first)
-                        } catch {
-                            print(error)
+
+                        let query: [String: String] = [
+                            "q": recipe.name,
+                            "mealType": recipe.selectedTypeOfMeal.rawValue,
+                            "diet": recipe.selectedDiet.rawValue,
+                            "calories": "\(recipe.caloriesStart)-\(recipe.caloriesEnd)"
+                        ]
+
+                        Task {
+                            do {
+                                let data = try await viewModel.getAllRecipes(query: query)
+                                recipes = data
+                                print(data)
+                            } catch {
+                                print(error)
+                            }
                         }
-                    }
+
+                    isSearchResultPresented = true
+                    
 
                     
                 }, label: {
@@ -96,22 +101,27 @@ struct SearchForm: View {
                         .bold()
                         .padding()
                         .padding(.horizontal, 120)
-                        .background(.white)
+                        .background(
+                            recipe.name.isEmpty ? Color(#colorLiteral(red: 0.6973065734, green: 0.6973065734, blue: 0.6973065734, alpha: 1)) : .white
+                        )
+                        .animation(.easeOut, value: recipe.name.isEmpty)
                         .cornerRadius(10)
-                        .shadow(radius: 5)
+                        .shadow(radius: 3)
                 })
-                .padding(.top, 25)
+                .disabled(recipe.name.isEmpty)
+                .padding(.top, 60)
                 
                 Image("EdamamAttributionLarge")
                     .resizable()
                     .scaledToFit()
                     .frame(height: 50)
                     .padding(.top, 8)
-                
             }
             .padding(.top, 40)
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .fullScreenCover(isPresented: $isSearchResultPresented) {
+            SearchResultView(viewModel: viewModel, recipe: $recipe, isPresented: $isSearchResultPresented, recipes: $recipes)
+        }
     }
 }
 

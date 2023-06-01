@@ -13,10 +13,8 @@ struct MyRecipesView: View {
     @State var isNewRecipePresented = false
     @State var isDetailRecipePresented = false
     
-    private var viewContext: NSManagedObjectContext
-    
-    @ObservedObject var coreDataViewModel: CoreDataViewModel = CoreDataViewModel(context: viewContext)
-    
+    @ObservedObject var viewModel: RecipesViewModel
+
     var body: some View {
         NavigationView {
             Form {
@@ -32,7 +30,7 @@ struct MyRecipesView: View {
                     
                 Section {
                     List {
-                        ForEach(coreDataViewModel.recipes, id: \.self) { recipe in
+                        ForEach(viewModel.recipes, id: \.self) { recipe in
                             
                             if let label = recipe.name {
                                 Text(label)
@@ -42,7 +40,9 @@ struct MyRecipesView: View {
                             }
                             
                         }
-                        .onDelete(perform: coreDataViewModel.deleteRecipe)
+                        .onDelete { indexSet in
+                            viewModel.deleteRecipe(indexSet: indexSet)
+                        }
                     }
                 }
                 
@@ -64,14 +64,8 @@ struct MyRecipesView: View {
         .sheet(isPresented: $isNewRecipePresented) {
             NewRecipeView(
                 isPresented: $isNewRecipePresented,
-                coreDataViewModel: coreDataViewModel
+                viewModel: viewModel
             )
         }
-    }
-}
-
-struct MyRecipesView_Previews: PreviewProvider {
-    static var previews: some View {
-        MyRecipesView()
     }
 }

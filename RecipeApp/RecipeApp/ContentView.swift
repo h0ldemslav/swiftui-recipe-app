@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    
+    @StateObject var recipeViewModel: RecipesViewModel = RecipesViewModel()
     
     var body: some View {
         TabView {
@@ -22,7 +23,7 @@ struct ContentView: View {
                     SwiftUI.Label("Search", systemImage: "magnifyingglass")
                 }
             
-            MyRecipesView()
+            MyRecipesView(viewModel: recipeViewModel)
                 .tabItem {
                     SwiftUI.Label("My recipes", systemImage: "text.book.closed")
                 }

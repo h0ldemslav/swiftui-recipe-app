@@ -12,7 +12,9 @@ struct NewRecipeView: View {
     @State var name: String = ""
     @Binding var isPresented: Bool
     
-    @StateObject var coreDataViewModel: CoreDataViewModel
+    @ObservedObject var viewModel: RecipesViewModel
+    
+    let rows = [GridItem(.fixed(30)), GridItem(.fixed(30))]
     
     var body: some View {
         NavigationView {
@@ -25,13 +27,14 @@ struct NewRecipeView: View {
                 } footer: {
                     
                 }
+        
             }
             
             .navigationTitle("New recipe")
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        coreDataViewModel.addNewRecipe(
+                        viewModel.addNewRecipe(
                             name: name,
                             ingredients: "",
                             instructions: "",
@@ -43,5 +46,11 @@ struct NewRecipeView: View {
                 }
             }
         }
+    }
+}
+
+struct NewRecipeView_Previews: PreviewProvider {
+    static var previews: some View {
+        NewRecipeView(isPresented: .constant(true), viewModel: RecipesViewModel())
     }
 }

@@ -1,32 +1,30 @@
 //
-//  CoreDataViewModel.swift
+//  RecipesRepositoryManager.swift
 //  RecipeApp
 //
-//  Created by Daniil Astapenko on 31.05.2023.
+//  Created by Daniil Astapenko on 01.06.2023.
 //
 
 import Foundation
-import CoreData
 import SwiftUI
+import CoreData
 
-class CoreDataViewModel: ObservableObject {
+class RecipesRepositoryManager: RecipesRepository {
+
+    private var viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+    static let shared = RecipesRepositoryManager()
     
-    private var viewContext: NSManagedObjectContext
-    
-    @Published var recipes: [RecipeEntity] = []
-    
-    init(context: NSManagedObjectContext) {
-        viewContext = context
-    }
-    
-    func fetchAllRecipes() {
+    func fetchAllRecipes() -> [RecipeEntity] {
         let request = NSFetchRequest<RecipeEntity>(entityName: "RecipeEntity")
+        var recipes: [RecipeEntity] = []
         
         do {
-            recipes = try viewContext.fetch(request)
+            try recipes.append(contentsOf: viewContext.fetch(request))
         } catch let error {
             print("Failed fetching data: \(error)")
         }
+        
+        return recipes
     }
     
     func addNewRecipe(name: String, ingredients: String, instructions: String, image: UIImage?) {
@@ -49,23 +47,20 @@ class CoreDataViewModel: ObservableObject {
         saveData()
     }
     
-    func deleteRecipe(indexSet: IndexSet) {
-        guard let index = indexSet.first else {
-            return
-        }
-        
-        let recipeEntity = recipes[index]
-        viewContext.delete(recipeEntity)
-        
+    func deleteRecipe(recipe: RecipeEntity) {
+        viewContext.delete(recipe)
         saveData()
     }
     
     private func saveData() {
-        do {
-            try viewContext.save()
-            fetchAllRecipes() // reassigning published variable to update the view
-        } catch let error {
-            print("Failed saving data: \(error)")
+        if viewContext.hasChanges {
+            do {
+                try viewContext.save()
+            } catch let error {
+                print("Failed saving data: \(error)")
+            }
         }
     }
+    
+    
 }

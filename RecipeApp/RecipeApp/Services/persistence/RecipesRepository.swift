@@ -9,8 +9,13 @@ import Foundation
 import SwiftUI
 
 protocol RecipesRepository {
-    func fetchAllRecipes() -> [RecipeEntity]
-    func addNewRecipe(name: String, ingredients: String, instructions: String, image: UIImage?)
+    func fetchAllRecipes() -> [RecipeData]
+    func fetchRecipeEntityByID(with id: UUID) -> RecipeEntity?
+    
+    func addNewRecipe(recipe: RecipeData)
     func addRecipeFromApi(name: String, uri: String)
-    func deleteRecipe(recipe: RecipeEntity)
+    func updateRecipe(recipe: RecipeData)
+    func deleteRecipe(recipe: RecipeData)
+    
+    func parseEntityToRecipe(entity: RecipeEntity) -> RecipeData
 }

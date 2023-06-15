@@ -11,26 +11,30 @@ import CoreData
 
 class RecipesViewModel: ObservableObject {
     
-    @Published var recipes: [RecipeEntity] = []
+    @Published var recipes: [RecipeData] = []
+    @Published var currentRecipe: RecipeData = RecipeData(id: nil, name: "", ingredients: [], instructions: "", image: nil)
     
     init() {
         fetchAll()
+    }
+    
+    func addNewRecipe(recipe: RecipeData) {
+        RecipesRepositoryManager.shared.addNewRecipe(recipe: recipe)
+        fetchAll()
+    }
+    
+    func updateRecipe(recipe: RecipeData) {
+        RecipesRepositoryManager.shared.updateRecipe(recipe: recipe)
+        fetchAll()
+    }
+    
+    func deleteRecipe(indexSet: IndexSet) {
+        guard let index = indexSet.first else { return }
+        RecipesRepositoryManager.shared.deleteRecipe(recipe: recipes[index])
     }
     
     private func fetchAll() {
         recipes = RecipesRepositoryManager.shared.fetchAllRecipes()
     }
     
-    func addNewRecipe(name: String, ingredients: String, instructions: String, image: UIImage?) {
-        RecipesRepositoryManager.shared.addNewRecipe(name: name, ingredients: ingredients, instructions: instructions, image: image)
-        fetchAll()
-    }
-    
-    func deleteRecipe(indexSet: IndexSet) {
-        guard let index = indexSet.first else {
-            return
-        }
-        
-        RecipesRepositoryManager.shared.deleteRecipe(recipe: recipes[index])
-    }
 }

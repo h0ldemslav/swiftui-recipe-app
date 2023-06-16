@@ -12,15 +12,10 @@ struct SearchView: View {
     @StateObject var searchViewModel: SearchViewModel = SearchViewModel()
     
     var body: some View {
-        VStack {
-            Text("Search recipes")
-                .font(.largeTitle)
-                .bold()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 15)
-                .padding(.top, 15)
-            
+        NavigationView {
             SearchForm(viewModel: searchViewModel, recipe: $searchViewModel.searchRecipe)
+            
+            .navigationTitle(Text("Search recipes"))
         }
     }
 }
@@ -30,7 +25,7 @@ struct SearchForm: View {
     @ObservedObject var viewModel: SearchViewModel
     @Binding var recipe: SearchRecipe
     @State var isSearchResultPresented: Bool = false
-    @State var recipes: [_Recipe]?
+    @State var recipes: [RecipeData]?
 
     var body: some View {
         ZStack {
@@ -85,16 +80,13 @@ struct SearchForm: View {
                             do {
                                 let data = try await viewModel.getAllRecipes(query: query)
                                 recipes = data
-                                print(data)
                             } catch {
                                 print(error)
                             }
                         }
 
                     isSearchResultPresented = true
-                    
-
-                    
+        
                 }, label: {
                     Text("Search")
                         .foregroundColor(.black)
@@ -119,6 +111,7 @@ struct SearchForm: View {
             }
             .padding(.top, 40)
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .fullScreenCover(isPresented: $isSearchResultPresented) {
             SearchResultView(viewModel: viewModel, recipe: $recipe, isPresented: $isSearchResultPresented, recipes: $recipes)
         }

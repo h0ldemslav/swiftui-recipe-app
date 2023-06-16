@@ -128,7 +128,7 @@ class RecipesRepositoryManager: RecipesRepository {
         let recipeEntity = RecipeEntity(context: moc)
         
         recipeEntity.name = name
-        recipeEntity.uri = URL(string: uri)
+        recipeEntity.uri = uri
         
         saveData()
     }

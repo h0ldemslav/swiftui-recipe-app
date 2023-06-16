@@ -11,7 +11,7 @@
         <attribute name="instructions" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="recipe_id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="uri" optional="YES" attributeType="URI"/>
+        <attribute name="uri" optional="YES" attributeType="String"/>
         <relationship name="ingredients" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="IngredientEntity" inverseName="recipes" inverseEntity="IngredientEntity"/>
     </entity>
 </model>

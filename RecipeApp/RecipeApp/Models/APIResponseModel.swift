@@ -52,8 +52,7 @@ struct Recipe: Codable {
     let yield: Double?
     let dietLabels, healthLabels, cautions, ingredientLines: [String]?
     let ingredients: [Ingredient]?
-    let calories, glycemicIndex, totalCO2Emissions: Double?
-    let co2EmissionsClass: String?
+    let calories: Double?
     let totalWeight: Double?
     let cuisineType, mealType, dishType, instructions: [String]?
     let tags: [String]?
@@ -62,7 +61,7 @@ struct Recipe: Codable {
     let digest: [Digest]?
 
     enum CodingKeys: String, CodingKey {
-        case uri, label, image, images, source, url, shareAs, yield, dietLabels, healthLabels, cautions, ingredientLines, ingredients, calories, glycemicIndex, totalCO2Emissions, co2EmissionsClass, totalWeight, cuisineType, mealType, dishType, instructions, tags
+        case uri, label, image, images, source, url, shareAs, yield, dietLabels, healthLabels, cautions, ingredientLines, ingredients, calories, totalWeight, cuisineType, mealType, dishType, instructions, tags
         case externalID = "externalId"
         case totalNutrients, totalDaily, digest
     }

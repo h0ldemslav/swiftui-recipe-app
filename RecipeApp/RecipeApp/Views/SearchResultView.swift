@@ -14,14 +14,14 @@ struct SearchResultView: View {
     @Binding var recipe: SearchRecipe
     @Binding var isPresented: Bool
     
-    @Binding var recipes: [_Recipe]?
+    @Binding var recipes: [RecipeData]?
 
     var body: some View {
         NavigationView {
 
                 ScrollView {
                     
-                    VStack {
+                    LazyVStack {
                         HStack {
                             TextField("", text: $recipe.name)
                                 .padding(.leading, 30)
@@ -29,6 +29,23 @@ struct SearchResultView: View {
                                     Image(systemName: "magnifyingglass"),
                                     alignment: .leading
                                 )
+                                .onSubmit {
+                                    let query: [String: String] = [
+                                        "q": recipe.name,
+                                        "mealType": recipe.selectedTypeOfMeal.rawValue,
+                                        "diet": recipe.selectedDiet.rawValue,
+                                        "calories": "\(recipe.caloriesStart)-\(recipe.caloriesEnd)"
+                                    ]
+
+                                    Task {
+                                        do {
+                                            let data = try await viewModel.getAllRecipes(query: query)
+                                            recipes = data
+                                        } catch {
+                                            print(error)
+                                        }
+                                    }
+                                }
                         }
                         .padding(10)
                         .background(colorScheme == .dark ? Color(#colorLiteral(red: 0.108350046, green: 0.1083115861, blue: 0.1192783192, alpha: 1)) : Color(#colorLiteral(red: 0.9490494132, green: 0.9489870667, blue: 0.9673765302, alpha: 1)))
@@ -37,23 +54,26 @@ struct SearchResultView: View {
                         .padding(.bottom, 35)
                         
                         if let r = recipes {
-                            ForEach(r) { recipe in
+                            ForEach(r, id: \.self) { recipe in
                                 HStack {
-                                    Image("steak-chips-salad")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .cornerRadius(10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.gray, lineWidth: 1)
-                                        )
-                                        .frame(maxWidth: 120, maxHeight: 120)
-                                        .padding(.leading, 12)
-                                    
+                                    if let imageURL = recipe.imageURL {
+                                        AsyncImage(url: URL(string: imageURL)) { image in
+                                            image.resizable()
+                                        } placeholder: {
+                                            ProgressView()
+                                        }
+                                            .cornerRadius(10)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .stroke(Color.gray, lineWidth: 1)
+                                            )
+                                            .frame(maxWidth: 120, maxHeight: 120)
+                                            .padding(.leading, 12)
+                                    }
                                     
                                     VStack(alignment: .leading) {
                                         
-                                        Text(recipe.label ?? "Unknown recipe")
+                                        Text(recipe.name)
                                             .padding(.bottom, 2)
                                             .font(.headline)
                                             .fontWeight(.bold)
@@ -79,6 +99,18 @@ struct SearchResultView: View {
                                 )
                                 .padding(.horizontal, 5)
                                 .padding(.bottom, 40)
+                            }
+                        }
+                        
+                        if recipes?.count == 0 {
+                            if let uiimage = UIImage(named: "undraw_empty") {
+                                Image(uiImage: uiimage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 200)
+                                
+                                Text("Oops, nothing was found for your query")
+                                    .padding(.top, 4)
                             }
                         }
                         

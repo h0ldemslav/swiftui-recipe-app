@@ -45,6 +45,7 @@ class RecipesRepositoryManager: RecipesRepository {
     
     func parseEntityToRecipe(entity: RecipeEntity) -> RecipeData {
         var ingredients: [IngredientData] = []
+        var uiimage: UIImage?
         
         if let set = entity.ingredients as? Set<IngredientEntity> {
             ingredients.append(contentsOf:
@@ -58,11 +59,16 @@ class RecipesRepositoryManager: RecipesRepository {
                             )
         }
         
+        if let image = entity.image {
+            uiimage = UIImage(data: image)
+        }
+        
         return RecipeData(
             id: entity.recipe_id ?? UUID(),
             name: entity.name ?? "Unknown recipe",
             ingredients: ingredients,
-            instructions: entity.instructions ?? ""
+            instructions: entity.instructions ?? "",
+            image: uiimage
         )
     
     }

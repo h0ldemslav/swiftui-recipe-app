@@ -8,25 +8,28 @@
 import SwiftUI
 
 struct ContentView: View {
-    
+    @State private var selection = 1
     @StateObject var recipesViewModel: RecipesViewModel = RecipesViewModel()
     
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             APIRecipesView()
                 .tabItem {
                     SwiftUI.Label("Edamam recipes", systemImage: "e.circle")
                 }
+                    .tag(2)
             
-            SearchView()
+            SearchView(recipesViewModel: recipesViewModel)
                 .tabItem {
                     SwiftUI.Label("Search", systemImage: "magnifyingglass")
                 }
+                    .tag(1)
             
             MyRecipesView(viewModel: recipesViewModel)
                 .tabItem {
                     SwiftUI.Label("My recipes", systemImage: "text.book.closed")
                 }
+                    .tag(3)
         }
 
     }

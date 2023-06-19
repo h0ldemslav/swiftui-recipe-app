@@ -41,13 +41,26 @@ class APIRepositoryManager: APIRepository {
 
                             return IngredientData(id: nil, name: text, quantity: String(quantity))
                         }
-
-
+                        
+                    
+                        var digest: [String] = []
+                        
+                        recipe.digest?.forEach {
+                            if let label = $0.label {
+                                digest.append(label)
+                            }
+                        }
+                        
                         recipes.append(RecipeData(
-                                id: nil, name: recipe.label ?? "",
+                                id: nil,
+                                name: recipe.label ?? "",
                                 ingredients: ingredients ?? [],
-                                instructions: "",
-                                imageURL: recipe.image
+                                instructions: recipe.url ?? "", // API doesn't provide instructions, so instead here will be stored a link to the recipe instr.
+                                calories: recipe.calories,
+                                healthLabels: recipe.healthLabels,
+                                digestData: digest,
+                                imageURL: recipe.image,
+                                uri: recipe.uri
                             )
                         )
                     }

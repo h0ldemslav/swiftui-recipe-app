@@ -8,12 +8,16 @@
 import SwiftUI
 
 struct SearchView: View {
-    
     @StateObject var searchViewModel: SearchViewModel = SearchViewModel()
+    @ObservedObject var recipesViewModel: RecipesViewModel
     
     var body: some View {
         NavigationView {
-            SearchForm(viewModel: searchViewModel, recipe: $searchViewModel.searchRecipe)
+            SearchForm(
+                viewModel: searchViewModel,
+                recipesViewModel: recipesViewModel,
+                recipe: $searchViewModel.searchRecipe
+            )
             
             .navigationTitle(Text("Search recipes"))
         }
@@ -21,8 +25,8 @@ struct SearchView: View {
 }
 
 struct SearchForm: View {
-    
     @ObservedObject var viewModel: SearchViewModel
+    @ObservedObject var recipesViewModel: RecipesViewModel
     @Binding var recipe: SearchRecipe
     @State var isSearchResultPresented: Bool = false
     @State var recipes: [RecipeData]?
@@ -113,13 +117,13 @@ struct SearchForm: View {
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .fullScreenCover(isPresented: $isSearchResultPresented) {
-            SearchResultView(viewModel: viewModel, recipe: $recipe, isPresented: $isSearchResultPresented, recipes: $recipes)
+            SearchResultView(
+                viewModel: viewModel,
+                recipesViewModel: recipesViewModel,
+                recipe: $recipe,
+                isPresented: $isSearchResultPresented,
+                recipes: $recipes
+            )
         }
-    }
-}
-
-struct SearchView_Previews: PreviewProvider {
-    static var previews: some View {
-        SearchView()
     }
 }

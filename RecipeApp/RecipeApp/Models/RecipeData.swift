@@ -13,6 +13,9 @@ struct RecipeData: Identifiable, Hashable {
     var name: String
     var ingredients: [IngredientData]
     var instructions: String
+    var calories: Double?
+    var healthLabels: [String]?
+    var digestData: [String]?
     var image: UIImage?
     var imageURL: String?
     var uri: String?

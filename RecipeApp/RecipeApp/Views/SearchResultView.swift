@@ -9,12 +9,15 @@ import SwiftUI
 
 struct SearchResultView: View {
     @ObservedObject var viewModel: SearchViewModel
+    @ObservedObject var recipesViewModel: RecipesViewModel
     @Environment(\.colorScheme) var colorScheme
     
     @Binding var recipe: SearchRecipe
     @Binding var isPresented: Bool
-    
     @Binding var recipes: [RecipeData]?
+    
+    @State var currentRecipe: RecipeData = RecipeData(id: nil, name: "", ingredients: [], instructions: "")
+    @State var isDetailPresented: Bool = false
 
     var body: some View {
         NavigationView {
@@ -51,7 +54,7 @@ struct SearchResultView: View {
                         .background(colorScheme == .dark ? Color(#colorLiteral(red: 0.108350046, green: 0.1083115861, blue: 0.1192783192, alpha: 1)) : Color(#colorLiteral(red: 0.9490494132, green: 0.9489870667, blue: 0.9673765302, alpha: 1)))
                         .cornerRadius(10)
                         .padding(.horizontal, 8)
-                        .padding(.bottom, 35)
+                        .padding(.bottom, 20)
                         
                         if let r = recipes {
                             ForEach(r, id: \.self) { recipe in
@@ -68,37 +71,58 @@ struct SearchResultView: View {
                                                     .stroke(Color.gray, lineWidth: 1)
                                             )
                                             .frame(maxWidth: 120, maxHeight: 120)
-                                            .padding(.leading, 12)
+                                            .padding(.leading, 15)
+                                            .padding(.bottom, 5)
                                     }
                                     
                                     VStack(alignment: .leading) {
                                         
                                         Text(recipe.name)
-                                            .padding(.bottom, 2)
+                                            .padding(.bottom, 0.5)
                                             .font(.headline)
                                             .fontWeight(.bold)
+                                            .lineLimit(1)
                                         
-                                        Text("High Fiber • Dairy Free • Gluten Free • Wheat Free • Egg Free • Peanut Free • Tree Nut Free • Soy Free • Fish Free • Shellfish Free • Pork Free • Crustacean Free • Celery Free")
-                                            .font(.caption2 )
-                                        
+                                        if let healthLabels = recipe.healthLabels {
+                                            Text(healthLabels.joined(separator: " • "))
+                                                .font(.subheadline)
+                                                .lineLimit(4)
+                                        } else {
+                                            Text("No health labels")
+                                                .font(.subheadline)
+
+                                            Spacer()
+                                        }
+
                                         Button(action: {
-                                            
+                                            currentRecipe = recipe
+                                            isDetailPresented = true
                                         }, label: {
-                                            Text("Read")
-                                                .font(.callout)
-                                                .fontWeight(.semibold)
-                                                .padding(.vertical, 1)
+                                            HStack {
+                                                Text("Read")
+                                                    .font(.callout)
+                                                    .fontWeight(.semibold)
+                                                    .padding(.vertical, 1)
+                                                
+                                                Spacer()
+                                                
+                                                Image("EdamamAttributionSmall")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(height: 30)
+                                            }
                                         })
+                                        
                                     }
                                     .padding(.horizontal)
                                 }
-                                .padding(.vertical, 15)
+                                .padding(.vertical, 8)
                                 .background(
                                     RoundedRectangle(cornerRadius: 25)
                                         .fill(colorScheme == .dark ? Color(#colorLiteral(red: 0.108350046, green: 0.1083115861, blue: 0.1192783192, alpha: 1)) : Color(#colorLiteral(red: 0.9490494132, green: 0.9489870667, blue: 0.9673765302, alpha: 1)))
                                 )
                                 .padding(.horizontal, 5)
-                                .padding(.bottom, 40)
+                                .padding(.bottom, 20)
                             }
                         }
                         
@@ -133,6 +157,9 @@ struct SearchResultView: View {
                 }
             }
         }
-
+        
+        .sheet(isPresented: $isDetailPresented) {
+            RecipeDetailView(recipe: $currentRecipe, viewModel: recipesViewModel)
+        }
     }
 }

@@ -43,13 +43,15 @@ class APIRepositoryManager: APIRepository {
                         }
                         
                     
-                        var digest: [String] = []
-                        
-                        recipe.digest?.forEach {
-                            if let label = $0.label {
-                                digest.append(label)
+                        var digest: [String: Double] = [:]
+
+                        recipe.digest?.forEach({ digestEntry in
+                            
+                            if digestEntry.label != nil && digestEntry.total != nil {
+                                digest[digestEntry.label!] = digestEntry.total!
                             }
-                        }
+                            
+                        })
                         
                         recipes.append(RecipeData(
                                 id: nil,
@@ -74,5 +76,16 @@ class APIRepositoryManager: APIRepository {
         }
         
         return []
+    }
+
+    func filterNutrientValuesInDigest(isMainNutrient: Bool, digestData: [String: Double]) -> [String: Double] {
+        let mainNutrient: (String) -> Bool = { $0 == "Fat" || $0 == "Carbs" || $0 == "Protein"}
+        let secondaryNutrient: (String) -> Bool = { ["Cholesterol", "Sodium", "Calcium", "Magnesium", "Potassium", "Iron"].contains($0) }
+        
+        if isMainNutrient {
+            return digestData.filter { mainNutrient($0.key) }
+        } else {
+            return digestData.filter { secondaryNutrient($0.key) }
+        }
     }
 }

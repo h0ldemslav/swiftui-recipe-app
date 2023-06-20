@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Charts
 
 struct RecipeDetailView: View {
     @Binding var recipe: RecipeData
@@ -17,61 +18,98 @@ struct RecipeDetailView: View {
         NavigationView {
             
             ScrollView {
-                VStack {
-                    if let image = recipe.image {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(Circle())
-                            .frame(width: 200, height: 200)
-                    }
+                
+                VStack(alignment: .leading) {
                     
-                    if let imageURL = recipe.imageURL {
-                        AsyncImage(url: URL(string: imageURL)) { image in
-                            image.resizable()
-                        } placeholder: {
-                            ProgressView()
+                    VStack(alignment: .center) {
+                        if let image = recipe.image {
+                            
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(Circle())
+                                .frame(width: 200, height: 200)
                         }
-                        .clipShape(Circle())
-                        .frame(width: 200, height: 200)
                         
-                        Image("EdamamAttributionLarge")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 50)
-                            .padding(.vertical, 8)
-                        
-                        Spacer()
+                        if let imageURL = recipe.imageURL {
+                            AsyncImage(url: URL(string: imageURL)) { image in
+                                image.resizable()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                                .clipShape(Circle())
+                                .frame(width: 200, height: 200)
+                            
+                            Image("EdamamAttributionLarge")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 50)
+                                .padding(.vertical, 8)
+                            
+                            Spacer()
+                        }
                     }
+                        .frame(maxWidth: .infinity)
                     
-                    VStack(alignment: .leading) {
-                        Text("Ingredients")
+                    Text("Ingredients")
+                        .font(.title2)
+                        .bold()
+                        .padding(.bottom, 8)
+                    
+                    ForEach(recipe.ingredients, id: \.self) { ingredient in
+                        Text("• \(ingredient.name)")
+                            .padding(.leading, 5)
+                            .padding(.bottom, 3)
+                    }
+                
+
+                    Text("Instructions")
+                        .font(.title2)
+                        .bold()
+                        .padding(.bottom, 8)
+                        .padding(.top, 12)
+                    
+                    Text(recipe.instructions)
+                        .padding(.bottom, 12)
+
+                    
+                    if let digest = recipe.digestData {
+                        let secondaryNutrients = APIRepositoryManager.shared.filterNutrientValuesInDigest(isMainNutrient: false, digestData: digest)
+                        let mainNutrients = APIRepositoryManager.shared.filterNutrientValuesInDigest(isMainNutrient: true, digestData: digest)
+
+                        Text("Details")
                             .font(.title2)
                             .bold()
                             .padding(.bottom, 8)
-                        ForEach(recipe.ingredients, id: \.self) { ingredient in
-                            Text("• \(ingredient.name)")
-                                .padding(.leading, 5)
-                                .padding(.bottom, 3)
+
+                        Chart {
+                            ForEach(Array(secondaryNutrients.keys), id: \.self) { key in
+                                BarMark(
+                                    x: .value("Name", key),
+                                    y: .value("Amount", secondaryNutrients[key]!)
+                                )
+                                    .foregroundStyle(by: .value("Name", key))
+                            }
                         }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom)
-                    .padding(.horizontal)
-                    
-                    VStack(alignment: .leading) {
-                        Text("Instructions")
-                            .font(.title2)
-                            .bold()
-                            .padding(.bottom, 8)
+                            .frame(height: 400)
                         
-                        Text(recipe.instructions)
+                        Text("In milligrams")
+                            .padding(.bottom, 30)
+
+                        Chart {
+                            ForEach(Array(mainNutrients.keys), id: \.self) { key in
+                                BarMark(x: .value(key, mainNutrients[key]!))
+                                    .foregroundStyle(by: .value("Name", key))
+                            }
+                        }
+                            .frame(height: 100)
+                        
+                        Text("In grams")
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom)
-                    .padding(.horizontal)
                     
                 }
+                    .padding(.horizontal)
+                
             }
             
             .navigationTitle(recipe.name)

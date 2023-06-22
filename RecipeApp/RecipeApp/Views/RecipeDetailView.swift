@@ -26,7 +26,6 @@ struct RecipeDetailView: View {
                             
                             Image(uiImage: image)
                                 .resizable()
-                                .scaledToFit()
                                 .clipShape(Circle())
                                 .frame(width: 200, height: 200)
                         }
@@ -50,6 +49,17 @@ struct RecipeDetailView: View {
                         }
                     }
                         .frame(maxWidth: .infinity)
+                        .padding(.bottom, 8)
+                    
+                    if let healthLabels = recipe.healthLabels {
+                        Text("Health Labels")
+                            .font(.title2)
+                            .bold()
+                            .padding(.bottom, 8)
+                        
+                        Text(healthLabels.joined(separator: ", "))
+                            .padding(.bottom, 8)
+                    }
                     
                     Text("Ingredients")
                         .font(.title2)
@@ -69,9 +79,20 @@ struct RecipeDetailView: View {
                         .padding(.bottom, 8)
                         .padding(.top, 12)
                     
-                    Text(recipe.instructions)
-                        .padding(.bottom, 12)
-
+                    if recipe.instructions.starts(with: "http") {
+                        
+                        if let url = URL(string: recipe.instructions) {
+                            Link("Recipe instructions (external web page)", destination: url)
+                                .padding(.bottom, 12)
+                        } else {
+                            Text("No instructions available")
+                                .padding(.bottom, 12)
+                        }
+                        
+                    } else {
+                        Text(recipe.instructions)
+                            .padding(.bottom, 12)
+                    }
                     
                     if let digest = recipe.digestData {
                         let secondaryNutrients = APIRepositoryManager.shared.filterNutrientValuesInDigest(isMainNutrient: false, digestData: digest)

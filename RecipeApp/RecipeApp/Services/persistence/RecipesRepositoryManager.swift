@@ -38,8 +38,6 @@ class RecipesRepositoryManager: RecipesRepository {
             entity = (try? request.execute())?.first
         }
         
-        print("ENTITY_UUID: \(entity?.recipe_id)")
-        
         return entity
     }
     
@@ -68,9 +66,18 @@ class RecipesRepositoryManager: RecipesRepository {
             name: entity.name ?? "Unknown recipe",
             ingredients: ingredients,
             instructions: entity.instructions ?? "",
-            image: uiimage
+            image: uiimage,
+            uri: entity.uri // a uri of the recipe from api; nil in case of user created recipe
         )
     
+    }
+    
+    func filterRecipesByType(_ type: RecipeType, recipes: [RecipeData]) -> [RecipeData] {
+        if type == .ApiRecipe {
+            return recipes.filter({ $0.uri != nil }) // only recipes from the api must contain uri
+        } else {
+            return recipes.filter({ $0.uri == nil })
+        }
     }
     
     func addNewRecipe(recipe: RecipeData) {
@@ -127,6 +134,7 @@ class RecipesRepositoryManager: RecipesRepository {
     func addRecipeFromApi(name: String, uri: String) {
         let recipeEntity = RecipeEntity(context: moc)
         
+        recipeEntity.recipe_id = UUID()
         recipeEntity.name = name
         recipeEntity.uri = uri
         

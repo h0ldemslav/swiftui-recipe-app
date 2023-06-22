@@ -10,6 +10,8 @@ import Charts
 
 struct RecipeDetailView: View {
     @Binding var recipe: RecipeData
+    @Binding var recipeType: RecipeType
+    @Binding var isDetailPresented: Bool
     @State var isAddEditRecipePresented: Bool = false
     
     @ObservedObject var viewModel: RecipesViewModel
@@ -137,13 +139,27 @@ struct RecipeDetailView: View {
             
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if recipe.id == nil {
+                    if recipe.id == nil && !viewModel.containsApiRecipeData(recipe) {
+                        // Recipe that comes from API
+                        
                         Button("Add to recipes") {
-                            // TODO: Save to Edamam recipes
+                            if let uri = recipe.uri {
+                                viewModel.addRecipeFromApi(name: recipe.name, uri: uri)
+                            }
                         }
+                        
                     } else if recipe.id != nil && recipe.uri == nil {
-                        Button("Edit recipe") {
+                        Button("Edit") {
                             isAddEditRecipePresented = true
+                        }
+                    }
+                }
+                
+                if recipe.id != nil || viewModel.containsApiRecipeData(recipe) {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Delete") {
+                            viewModel.deleteRecipe(recipeType, recipe: recipe)
+                            isDetailPresented = false
                         }
                     }
                 }

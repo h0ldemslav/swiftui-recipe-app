@@ -8,13 +8,19 @@
 import SwiftUI
 
 struct APIRecipesView: View {
+    @State private var recipeType: RecipeType = .ApiRecipe
+    
+    @ObservedObject var viewModel: RecipesViewModel
+    
     var body: some View {
-        Text("Edamam recipes")
-    }
-}
-
-struct APIRecipesView_Previews: PreviewProvider {
-    static var previews: some View {
-        APIRecipesView()
+        NavigationView {
+            RecipesListView(
+                recipeType: $recipeType,
+                recipes: $viewModel.apiRecipes,
+                viewModel: viewModel
+            )
+            
+            .navigationTitle("Web recipes")
+        }
     }
 }

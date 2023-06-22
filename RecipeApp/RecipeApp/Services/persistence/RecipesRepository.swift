@@ -8,6 +8,11 @@
 import Foundation
 import SwiftUI
 
+enum RecipeType {
+    case ApiRecipe
+    case UserRecipe
+}
+
 protocol RecipesRepository {
     func fetchAllRecipes() -> [RecipeData]
     func fetchRecipeEntityByID(with id: UUID) -> RecipeEntity?
@@ -18,4 +23,5 @@ protocol RecipesRepository {
     func deleteRecipe(recipe: RecipeData)
     
     func parseEntityToRecipe(entity: RecipeEntity) -> RecipeData
+    func filterRecipesByType(_ type: RecipeType, recipes: [RecipeData]) -> [RecipeData]
 }

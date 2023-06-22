@@ -18,6 +18,7 @@ struct SearchResultView: View {
     
     @State var currentRecipe: RecipeData = RecipeData(id: nil, name: "", ingredients: [], instructions: "")
     @State var isDetailPresented: Bool = false
+    @State private var recipeType: RecipeType = .ApiRecipe
 
     var body: some View {
         NavigationView {
@@ -159,7 +160,12 @@ struct SearchResultView: View {
         }
         
         .sheet(isPresented: $isDetailPresented) {
-            RecipeDetailView(recipe: $currentRecipe, viewModel: recipesViewModel)
+            RecipeDetailView(
+                recipe: $currentRecipe,
+                recipeType: $recipeType,
+                isDetailPresented: $isDetailPresented,
+                viewModel: recipesViewModel
+            )
         }
     }
 }

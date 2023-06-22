@@ -13,9 +13,9 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selection) {
-            APIRecipesView()
+            APIRecipesView(viewModel: recipesViewModel)
                 .tabItem {
-                    SwiftUI.Label("Edamam recipes", systemImage: "e.circle")
+                    SwiftUI.Label("Web recipes", systemImage: "w.circle")
                 }
                     .tag(2)
             

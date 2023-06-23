@@ -23,6 +23,7 @@ enum _MealType: String, CaseIterable {
 }
 
 enum DietType: String, CaseIterable {
+    case None = "none"
     case Balanced = "balanced"
     case HighFiber = "high-fiber"
     case HighProtein = "high-protein"
@@ -33,7 +34,7 @@ enum DietType: String, CaseIterable {
 
 struct SearchRecipe {
     var name: String = ""
-    var selectedDiet: DietType = .HighProtein
+    var selectedDiet: DietType = .None
     var selectedTypeOfMeal: _MealType = .Lunch
     var caloriesStart: Int = SearchRecipeConstants.caloriesStart
     var caloriesEnd: Int = SearchRecipeConstants.caloriesEnd

@@ -20,7 +20,7 @@ struct MyRecipesView: View {
             RecipesListView(
                 recipeType: $recipeType,
                 recipes: $viewModel.recipes,
-                viewModel: viewModel
+                recipesViewModel: viewModel
             )
             
             .navigationTitle("My recipes")

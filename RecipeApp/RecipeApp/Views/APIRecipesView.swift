@@ -17,7 +17,7 @@ struct APIRecipesView: View {
             RecipesListView(
                 recipeType: $recipeType,
                 recipes: $viewModel.apiRecipes,
-                viewModel: viewModel
+                recipesViewModel: viewModel
             )
             
             .navigationTitle("Web recipes")

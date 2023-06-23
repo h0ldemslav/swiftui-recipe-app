@@ -72,13 +72,15 @@ struct SearchForm: View {
             
             VStack {
                 Button(action: {
-
-                        let query: [String: String] = [
+                        var query: [String: String] = [
                             "q": recipe.name,
                             "mealType": recipe.selectedTypeOfMeal.rawValue,
-                            "diet": recipe.selectedDiet.rawValue,
                             "calories": "\(recipe.caloriesStart)-\(recipe.caloriesEnd)"
                         ]
+                        
+                        if recipe.selectedDiet != .None {
+                            query.updateValue(recipe.selectedDiet.rawValue, forKey: "diet")
+                        }
 
                         Task {
                             do {

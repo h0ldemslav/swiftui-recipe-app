@@ -9,13 +9,20 @@ import Foundation
 
 class APIRepositoryManager: APIRepository {
     private let apiManager: APIManager = APIManager()
+    private let appID: String
+    private let appKey: String
     static let shared = APIRepositoryManager()
     
-    func getRecipeData(query: [String: String]) async throws -> [RecipeData] {
-        guard let infoDictionary: [String: Any] = Bundle.main.infoDictionary else { return [] }
-        guard let appID: String = infoDictionary["App Api ID"] as? String else { return [] }
-        guard let appKey: String = infoDictionary["App Api Keys"] as? String else { return [] }
-
+    init() {
+        appID = Bundle.main.infoDictionary?["App Api ID"] as? String ?? ""
+        appKey = Bundle.main.infoDictionary?["App Api Keys"] as? String ?? ""
+        
+        if appID.isEmpty || appKey.isEmpty {
+            print("Failed to fetch app_id or(and) app_key from Info")
+        }
+    }
+    
+    func getAllRecipeData(query: [String: String]) async throws -> [RecipeData] {
         var recipes: [RecipeData] = []
         let recipesURLAddress = URL(string: "https://api.edamam.com/api/recipes/v2")
 
@@ -70,12 +77,80 @@ class APIRepositoryManager: APIRepository {
 
                 return recipes
 
-            } catch {
+            } catch let error {
                 print(error)
             }
         }
         
-        return []
+        return recipes
+    }
+    
+    func getRecipeDataByURI(uri: String) async throws -> RecipeData? {
+        let recipesURLAddress = URL(string: "https://api.edamam.com/api/recipes/v2/by-uri")
+        
+        if var url = recipesURLAddress {
+            var recipeData: RecipeData = RecipeData(
+                id: nil,
+                name: "",
+                ingredients: [],
+                instructions: "",
+                calories: nil,
+                healthLabels: nil,
+                digestData: nil,
+                imageURL: "",
+                uri: ""
+            )
+            
+            url = url.appending(queryItems: [
+                    URLQueryItem(name: "type", value: "public"),
+                    URLQueryItem(name: "app_id", value: appID),
+                    URLQueryItem(name: "app_key", value: appKey),
+                    URLQueryItem(name: "uri", value: uri)
+                ]
+            )
+
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            do {
+                let response: Response = try await apiManager.request(request)
+                
+                if let recipe = response.hits?.first?.recipe {
+                    let ingredients = recipe.ingredients?.map {
+                        let text = $0.text ?? ""
+                        let quantity = $0.quantity ?? 0.0
+
+                        return IngredientData(id: nil, name: text, quantity: String(quantity))
+                    }
+                    
+                    var digest: [String: Double] = [:]
+
+                    recipe.digest?.forEach({ digestEntry in
+                        
+                        if digestEntry.label != nil && digestEntry.total != nil {
+                            digest[digestEntry.label!] = digestEntry.total!
+                        }
+                        
+                    })
+                    
+                    recipeData.name = recipe.label ?? "Unknown recipe"
+                    recipeData.ingredients = ingredients ?? []
+                    recipeData.instructions = recipe.url ?? ""
+                    recipeData.calories = recipe.calories
+                    recipeData.healthLabels = recipe.healthLabels
+                    recipeData.digestData = digest
+                    recipeData.imageURL = recipe.image
+                    recipeData.uri = recipe.uri
+                    
+                    return recipeData
+                }
+                
+            } catch let error {
+                print(error)
+            }
+        }
+        
+        return nil
     }
 
     func filterNutrientValuesInDigest(isMainNutrient: Bool, digestData: [String: Double]) -> [String: Double] {

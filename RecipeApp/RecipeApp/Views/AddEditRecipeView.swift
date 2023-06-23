@@ -54,6 +54,12 @@ struct AddEditRecipeView: View {
                                 isAddEditIngredientPresented = true
                             }
                         }
+                        .onDelete { indexSet in
+                            guard let index = indexSet.first else { return }
+                            guard let ingredientID = recipe.ingredients[index].id else { return }
+                            
+                            recipe.ingredients = viewModel.deleteIngredientByID(ingredientID: ingredientID, recipeIngredients: recipe.ingredients)
+                        }
 
                         Button("Add ingredient") {
                             isAddEditIngredientPresented = true

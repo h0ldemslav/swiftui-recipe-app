@@ -39,20 +39,26 @@ struct AddEditIngredientView: View {
             .navigationTitle("Ingredient")
             
             .toolbar {
-                ToolbarItemGroup {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        if !isIngredientEmpty {
-                            if let index = recipe.ingredients.firstIndex(where: { $0.id == ingredient.id }) {
-                                recipe.ingredients[index] = ingredient
-                            }
-                        } else {
-                            let newIngredient = IngredientData(id: UUID(), name: ingredient.name, quantity: ingredient.quantity)
-                            recipe.ingredients.append(newIngredient)
-                        }
+                        recipe.ingredients = viewModel.createOrUpdateIngredient(
+                            isNewIngredient: isIngredientEmpty,
+                            ingredient: ingredient,
+                            recipeIngredients: recipe.ingredients
+                        )
                         
                         ingredient.name = ""
                         ingredient.quantity = ""
                         isPresented = false
+                    }
+                }
+                
+                if let ingredientID = ingredient.id {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        Button("Delete") {
+                            recipe.ingredients = viewModel.deleteIngredientByID(ingredientID: ingredientID, recipeIngredients: recipe.ingredients)
+                            isPresented = false
+                        }
                     }
                 }
             }

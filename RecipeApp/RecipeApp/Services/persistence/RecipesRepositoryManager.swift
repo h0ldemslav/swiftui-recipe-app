@@ -91,7 +91,6 @@ class RecipesRepositoryManager: RecipesRepository {
         let ingredients = recipe.ingredients.map {
             let ingredientEntity = IngredientEntity(context: moc)
             
-            ingredientEntity.ingredient_id = UUID()
             ingredientEntity.name = $0.name
             ingredientEntity.quantity = $0.quantity
             ingredientEntity.recipes = recipeEntity

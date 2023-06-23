@@ -62,3 +62,36 @@ class RecipesViewModel: ObservableObject {
     }
 
 }
+
+// Ingredients
+
+extension RecipesViewModel {
+    func createOrUpdateIngredient(isNewIngredient: Bool, ingredient: IngredientData, recipeIngredients: [IngredientData]) -> [IngredientData] {
+        var ingredients = recipeIngredients
+        
+        if !isNewIngredient {
+            
+            if let index = ingredients.firstIndex(where: { $0.id == ingredient.id }) {
+                ingredients[index].name = ingredient.name
+                ingredients[index].quantity = ingredient.quantity
+            }
+            
+        } else {
+            let newIngredient = IngredientData(id: UUID(), name: ingredient.name, quantity: ingredient.quantity)
+            ingredients.append(newIngredient)
+        }
+        
+        return ingredients
+    }
+    
+    func deleteIngredientByID(ingredientID: UUID, recipeIngredients: [IngredientData]) -> [IngredientData] {
+        var ingredients = recipeIngredients
+        
+        if let index = ingredients.firstIndex(where: { $0.id == ingredientID }) {
+            ingredients.remove(at: index)
+        }
+        
+        return ingredients
+    }
+    
+}

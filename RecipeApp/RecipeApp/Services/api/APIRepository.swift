@@ -8,7 +8,7 @@
 import Foundation
 
 protocol APIRepository {
-    func getAllRecipeData(query: [String: String]) async throws -> [RecipeData]
+    func getAllRecipeData(query: [String: String]) async throws -> [RecipeData]?
     func getRecipeDataByURI(uri: String) async throws -> RecipeData?
     func filterNutrientValuesInDigest(isMainNutrient: Bool, digestData: [String: Double]) -> [String: Double] // main nutrient == fat, carbs or protein
 }

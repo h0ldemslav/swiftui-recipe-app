@@ -10,6 +10,7 @@ import SwiftUI
 struct RecipesListView: View {
     @State var recipeSearchValue: String = ""
     @State var isDetailRecipePresented: Bool = false
+    @State var isErrorViewPresented: Bool = false
     @State var isProgressViewVisible: Bool = false
     @Binding var recipeType: RecipeType
     @Binding var recipes: [RecipeData]
@@ -39,6 +40,7 @@ struct RecipesListView: View {
                                     currentRecipe: $recipes[index],
                                     recipeType: $recipeType,
                                     isDetailRecipePresented: $isDetailRecipePresented,
+                                    isErrorViewPresented: $isErrorViewPresented,
                                     isProgressViewVisible: $isProgressViewVisible,
                                     recipesViewModel: recipesViewModel,
                                     searchRecipeViewModel: searchRecipeViewModel
@@ -50,6 +52,7 @@ struct RecipesListView: View {
                                     currentRecipe: $recipes[index],
                                     recipeType: $recipeType,
                                     isDetailRecipePresented: $isDetailRecipePresented,
+                                    isErrorViewPresented: $isErrorViewPresented,
                                     isProgressViewVisible: $isProgressViewVisible,
                                     recipesViewModel: recipesViewModel,
                                     searchRecipeViewModel: searchRecipeViewModel
@@ -79,14 +82,22 @@ struct RecipesListView: View {
             }
         }
         
-            .sheet(isPresented: $isDetailRecipePresented) {
-                RecipeDetailView(
-                    recipe: $recipesViewModel.currentRecipe,
-                    recipeType: $recipeType,
-                    isDetailPresented: $isDetailRecipePresented,
-                    viewModel: recipesViewModel
-                )
-            }
+        .sheet(isPresented: $isDetailRecipePresented) {
+            RecipeDetailView(
+                recipe: $recipesViewModel.currentRecipe,
+                recipeType: $recipeType,
+                isDetailPresented: $isDetailRecipePresented,
+                viewModel: recipesViewModel
+            )
+        }
+        
+        .sheet(isPresented: $isErrorViewPresented) {
+            BasicErrorViewSheet(
+                isPresented: $isErrorViewPresented,
+                text: $searchRecipeViewModel.placeholder.text,
+                imageAssetName: $searchRecipeViewModel.placeholder.imageAssetName
+            )
+        }
     }
 }
 
@@ -94,6 +105,7 @@ struct RecipeListRow: View {
     @Binding var currentRecipe: RecipeData
     @Binding var recipeType: RecipeType
     @Binding var isDetailRecipePresented: Bool
+    @Binding var isErrorViewPresented: Bool
     @Binding var isProgressViewVisible: Bool
     
     @ObservedObject var recipesViewModel: RecipesViewModel
@@ -113,21 +125,17 @@ struct RecipeListRow: View {
                 isProgressViewVisible = true
                 
                 Task {
-                    do {
-                        let data = try await searchRecipeViewModel.getRecipeByURI(uri: currentRecipe.uri!)
-                        
-                        if let recipe = data {
-                            recipesViewModel.currentRecipe = recipe
-                        }
-                        
+                    let data = await searchRecipeViewModel.getRecipeByURI(uri: currentRecipe.uri!)
+                    
+                    if let recipe = data {
+                        recipesViewModel.currentRecipe = recipe
                         isProgressViewVisible = false
                         isDetailRecipePresented = true
-                    } catch let error {
-                        print(error)
-                        
+                    } else {
                         isProgressViewVisible = false
-                        isDetailRecipePresented = true
+                        isErrorViewPresented = true
                     }
+                    
                 }
 
             } else {

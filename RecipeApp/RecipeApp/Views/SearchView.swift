@@ -82,16 +82,9 @@ struct SearchForm: View {
                             query.updateValue(recipe.selectedDiet.rawValue, forKey: "diet")
                         }
 
-                        Task {
-                            do {
-                                let data = try await viewModel.getAllRecipes(query: query)
-                                recipes = data
-                            } catch {
-                                print(error)
-                            }
-                        }
+                        Task { recipes = await viewModel.getAllRecipes(query: query) }
 
-                    isSearchResultPresented = true
+                        isSearchResultPresented = true
         
                 }, label: {
                     Text("Search")

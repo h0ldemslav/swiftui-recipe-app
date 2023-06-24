@@ -18,6 +18,7 @@ struct SearchResultView: View {
     
     @State var currentRecipe: RecipeData = RecipeData(id: nil, name: "", ingredients: [], instructions: "")
     @State var isDetailPresented: Bool = false
+    @State var isErrorPresented: Bool = false
     @State private var recipeType: RecipeType = .ApiRecipe
 
     var body: some View {
@@ -34,21 +35,21 @@ struct SearchResultView: View {
                                     alignment: .leading
                                 )
                                 .onSubmit {
-                                    let query: [String: String] = [
+                                    var query: [String: String] = [
                                         "q": recipe.name,
                                         "mealType": recipe.selectedTypeOfMeal.rawValue,
-                                        "diet": recipe.selectedDiet.rawValue,
                                         "calories": "\(recipe.caloriesStart)-\(recipe.caloriesEnd)"
                                     ]
-
-                                    Task {
-                                        do {
-                                            let data = try await viewModel.getAllRecipes(query: query)
-                                            recipes = data
-                                        } catch {
-                                            print(error)
-                                        }
+                                    
+                                    if recipe.selectedDiet != .None {
+                                        query.updateValue(recipe.selectedDiet.rawValue, forKey: "diet")
                                     }
+                                    
+                                    recipes = nil
+                                    viewModel.placeholder.text = ""
+                                    viewModel.placeholder.imageAssetName = ""
+
+                                    Task { recipes = await viewModel.getAllRecipes(query: query) }
                                 }
                         }
                         .padding(10)
@@ -127,16 +128,10 @@ struct SearchResultView: View {
                             }
                         }
                         
-                        if recipes?.count == 0 {
-                            if let uiimage = UIImage(named: "undraw_empty") {
-                                Image(uiImage: uiimage)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 200)
-                                
-                                Text("Oops, nothing was found for your query")
-                                    .padding(.top, 4)
-                            }
+                        if !viewModel.placeholder.text.isEmpty && !viewModel.placeholder.imageAssetName.isEmpty {
+                            BasicErrorView(text: $viewModel.placeholder.text, imageAssetName: $viewModel.placeholder.imageAssetName)
+                        } else if recipes == nil && recipes != [] {
+                            ProgressView()
                         }
                         
                     }

@@ -29,8 +29,8 @@ struct SearchForm: View {
     @ObservedObject var recipesViewModel: RecipesViewModel
     @Binding var recipe: SearchRecipe
     @State var isSearchResultPresented: Bool = false
-    @State var recipes: [RecipeData]?
-
+    @State var recipes: [RecipeData] = []
+    
     var body: some View {
         ZStack {
             

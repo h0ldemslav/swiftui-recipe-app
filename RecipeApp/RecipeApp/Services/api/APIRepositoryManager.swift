@@ -11,6 +11,8 @@ class APIRepositoryManager: APIRepository {
     private let apiManager: APIManager = APIManager()
     private let appID: String
     private let appKey: String
+    private var nextPage = ""
+    
     static let shared = APIRepositoryManager()
     
     init() {
@@ -22,8 +24,8 @@ class APIRepositoryManager: APIRepository {
         }
     }
     
-    func getAllRecipeData(query: [String: String]) async throws -> [RecipeData]? {
-        var recipes: [RecipeData]? = nil
+    func getAllRecipeData(query: [String: String]) async throws -> [RecipeData] {
+        var recipes: [RecipeData] = []
         let recipesURLAddress = URL(string: "https://api.edamam.com/api/recipes/v2")
 
         if var url = recipesURLAddress {
@@ -38,43 +40,8 @@ class APIRepositoryManager: APIRepository {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
             let response: Response = try await apiManager.request(request)
-            
-            recipes = []
-            
-            response.hits?.forEach {
-                
-                if let recipe = $0.recipe {
-                    let ingredients = recipe.ingredients?.map {
-                        let text = $0.text ?? ""
-                        let quantity = $0.quantity ?? 0.0
-
-                        return IngredientData(id: nil, name: text, quantity: String(quantity))
-                    }
-                    
-                    var digest: [String: Double] = [:]
-
-                    recipe.digest?.forEach({ digestEntry in
                         
-                        if digestEntry.label != nil && digestEntry.total != nil {
-                            digest[digestEntry.label!] = digestEntry.total!
-                        }
-                        
-                    })
-                    
-                    recipes?.append(RecipeData(
-                            id: nil,
-                            name: recipe.label ?? "",
-                            ingredients: ingredients ?? [],
-                            instructions: recipe.url ?? "", // API doesn't provide instructions, so instead here will be stored a link to the recipe instr.
-                            calories: recipe.calories,
-                            healthLabels: recipe.healthLabels,
-                            digestData: digest,
-                            imageURL: recipe.image,
-                            uri: recipe.uri
-                        )
-                    )
-                }
-            }
+            recipes = getRecipeDataFromResponseHits(response)
         }
         
         return recipes
@@ -142,7 +109,26 @@ class APIRepositoryManager: APIRepository {
         
         return recipeData
     }
-
+    
+    func getNextPage() async throws -> [RecipeData] {
+        var recipes: [RecipeData] = []
+        
+        if !nextPage.isEmpty {
+            
+            if let url = URL(string: nextPage) {
+                var request = URLRequest(url: url)
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                
+                let response: Response = try await apiManager.request(request)
+                
+                recipes = getRecipeDataFromResponseHits(response)
+            }
+            
+        }
+        
+        return recipes
+    }
+    
     func filterNutrientValuesInDigest(isMainNutrient: Bool, digestData: [String: Double]) -> [String: Double] {
         let mainNutrient: (String) -> Bool = { $0 == "Fat" || $0 == "Carbs" || $0 == "Protein"}
         let secondaryNutrient: (String) -> Bool = { ["Cholesterol", "Sodium", "Calcium", "Magnesium", "Potassium", "Iron"].contains($0) }
@@ -153,4 +139,48 @@ class APIRepositoryManager: APIRepository {
             return digestData.filter { secondaryNutrient($0.key) }
         }
     }
+    
+    private func getRecipeDataFromResponseHits(_ response: Response) -> [RecipeData] {
+        var recipes: [RecipeData] = []
+        
+        nextPage = response.links?.next?.href ?? ""
+        
+        response.hits?.forEach {
+            
+            if let recipe = $0.recipe {
+                let ingredients = recipe.ingredients?.map {
+                    let text = $0.text ?? ""
+                    let quantity = $0.quantity ?? 0.0
+
+                    return IngredientData(id: nil, name: text, quantity: String(quantity))
+                }
+                
+                var digest: [String: Double] = [:]
+
+                recipe.digest?.forEach({ digestEntry in
+                    
+                    if digestEntry.label != nil && digestEntry.total != nil {
+                        digest[digestEntry.label!] = digestEntry.total!
+                    }
+                    
+                })
+                
+                recipes.append(RecipeData(
+                        id: nil,
+                        name: recipe.label ?? "",
+                        ingredients: ingredients ?? [],
+                        instructions: recipe.url ?? "", // API doesn't provide instructions, so instead here will be stored a link to the recipe instr.
+                        calories: recipe.calories,
+                        healthLabels: recipe.healthLabels,
+                        digestData: digest,
+                        imageURL: recipe.image,
+                        uri: recipe.uri
+                    )
+                )
+            }
+        }
+        
+        return recipes
+    }
+    
 }

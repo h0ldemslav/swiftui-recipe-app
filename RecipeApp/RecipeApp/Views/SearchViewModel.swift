@@ -11,16 +11,23 @@ import Foundation
 class SearchViewModel: ObservableObject {
     @Published var searchRecipe: SearchRecipe = SearchRecipe()
     @Published var placeholder: ErrorPlaceholder = ErrorPlaceholder(text: "", imageAssetName: "")
+    @Published private (set) var paginationState: PaginationState = .Idle
     
-    func getAllRecipes(query: [String: String]) async -> [RecipeData]? {
-        var recipes: [RecipeData]? = nil
+    func getAllRecipes(query: [String: String]) async -> [RecipeData] {
+        paginationState = .Idle
+        placeholder.text = ""
+        placeholder.imageAssetName = ""
+        
+        var recipes: [RecipeData] = []
         
         do {
             recipes = try await APIRepositoryManager.shared.getAllRecipeData(query: query)
 
-            if recipes?.count == 0 {
+            if recipes.count == 0 {
                 placeholder.text = "No recipe found"
                 placeholder.imageAssetName = "undraw_empty"
+            } else {
+                paginationState = .Paginating
             }
         } catch let error {
             processError(error)
@@ -44,6 +51,24 @@ class SearchViewModel: ObservableObject {
         }
         
         return recipe
+    }
+    
+    func getNextPage() async -> [RecipeData] {
+        var recipes: [RecipeData] = []
+        
+        do {
+            recipes = try await APIRepositoryManager.shared.getNextPage()
+            
+            if recipes.count == 0 {
+                paginationState = .EndOfPagination
+            }
+
+        } catch let error {
+            paginationState = .Idle
+            processError(error)
+        }
+        
+        return recipes
     }
     
     private func processError(_ e: Error) {

@@ -18,7 +18,7 @@ struct RecipeData: Identifiable, Hashable {
     var digestData: [String: Double]?
     var image: UIImage?
     var imageURL: String?
-    var uri: String?
+    var remoteID: String? // for api's recipes
 }
 
 struct IngredientData: Identifiable, Hashable {

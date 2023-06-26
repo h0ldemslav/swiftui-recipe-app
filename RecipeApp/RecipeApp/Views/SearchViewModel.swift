@@ -36,11 +36,11 @@ class SearchViewModel: ObservableObject {
         return recipes
     }
     
-    func getRecipeByURI(uri: String) async -> RecipeData? {
+    func getRecipeByID(id: String) async -> RecipeData? {
         var recipe: RecipeData? = nil
-        
+
         do {
-            recipe = try await APIRepositoryManager.shared.getRecipeDataByURI(uri: uri)
+            recipe = try await APIRepositoryManager.shared.getRecipeDataByID(id: id)
             
             if recipe == nil {
                 placeholder.text = "No recipe found"

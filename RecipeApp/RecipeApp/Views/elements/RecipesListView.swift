@@ -121,11 +121,11 @@ struct RecipeListRow: View {
         .contentShape(Rectangle())
         .onTapGesture {
             
-            if recipeType == .ApiRecipe && currentRecipe.uri != nil {
+            if recipeType == .ApiRecipe && currentRecipe.remoteID != nil {
                 isProgressViewVisible = true
                 
                 Task {
-                    let data = await searchRecipeViewModel.getRecipeByURI(uri: currentRecipe.uri!)
+                    let data = await searchRecipeViewModel.getRecipeByID(id: currentRecipe.remoteID!)
                     
                     if let recipe = data {
                         recipesViewModel.currentRecipe = recipe

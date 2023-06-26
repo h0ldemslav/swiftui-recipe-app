@@ -143,12 +143,12 @@ struct RecipeDetailView: View {
                         // Recipe that comes from API
                         
                         Button("Add to recipes") {
-                            if let uri = recipe.uri {
-                                viewModel.addRecipeFromApi(name: recipe.name, uri: uri)
+                            if let remoteID = recipe.remoteID {
+                                viewModel.addRecipeFromApi(name: recipe.name, id: remoteID)
                             }
                         }
                         
-                    } else if recipe.id != nil && recipe.uri == nil {
+                    } else if recipe.id != nil && recipe.remoteID == nil {
                         Button("Edit") {
                             isAddEditRecipePresented = true
                         }

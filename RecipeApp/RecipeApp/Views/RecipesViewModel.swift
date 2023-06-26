@@ -19,8 +19,8 @@ class RecipesViewModel: ObservableObject {
         fetchAllRecipes()
     }
     
-    func addRecipeFromApi(name: String, uri: String) {
-        RecipesRepositoryManager.shared.addRecipeFromApi(name: name, uri: uri)
+    func addRecipeFromApi(name: String, id: String) {
+        RecipesRepositoryManager.shared.addRecipeFromApi(name: name, id: id)
         fetchAllRecipes()
     }
     
@@ -39,7 +39,7 @@ class RecipesViewModel: ObservableObject {
         
         if type == .ApiRecipe {
             
-            if let index = apiRecipes.firstIndex(where: { $0.uri == recipeData.uri }) {
+            if let index = apiRecipes.firstIndex(where: { $0.remoteID == recipeData.remoteID }) {
                 recipeData = apiRecipes[index]
                 apiRecipes.remove(at: index)
             }
@@ -52,7 +52,7 @@ class RecipesViewModel: ObservableObject {
     }
     
     func containsApiRecipeData(_ recipeData: RecipeData) -> Bool {
-        return apiRecipes.contains(where: { $0.uri == recipeData.uri })
+        return apiRecipes.contains(where: { $0.remoteID == recipeData.remoteID })
     }
     
     private func fetchAllRecipes() {

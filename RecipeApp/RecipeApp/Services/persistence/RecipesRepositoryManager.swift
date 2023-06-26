@@ -67,16 +67,16 @@ class RecipesRepositoryManager: RecipesRepository {
             ingredients: ingredients,
             instructions: entity.instructions ?? "",
             image: uiimage,
-            uri: entity.uri // a uri of the recipe from api; nil in case of user created recipe
+            remoteID: entity.remoteID // only api's recipes have a remoteID (String), user recipes must have nil value
         )
     
     }
     
     func filterRecipesByType(_ type: RecipeType, recipes: [RecipeData]) -> [RecipeData] {
         if type == .ApiRecipe {
-            return recipes.filter({ $0.uri != nil }) // only recipes from the api must contain uri
+            return recipes.filter({ $0.remoteID != nil }) // only api's recipes have a remoteID
         } else {
-            return recipes.filter({ $0.uri == nil })
+            return recipes.filter({ $0.remoteID == nil })
         }
     }
     
@@ -130,12 +130,12 @@ class RecipesRepositoryManager: RecipesRepository {
         }
     }
     
-    func addRecipeFromApi(name: String, uri: String) {
+    func addRecipeFromApi(name: String, id: String) {
         let recipeEntity = RecipeEntity(context: moc)
         
         recipeEntity.recipe_id = UUID()
         recipeEntity.name = name
-        recipeEntity.uri = uri
+        recipeEntity.remoteID = id
         
         saveData()
     }

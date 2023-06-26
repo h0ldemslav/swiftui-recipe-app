@@ -18,7 +18,7 @@ protocol RecipesRepository {
     func fetchRecipeEntityByID(with id: UUID) -> RecipeEntity?
     
     func addNewRecipe(recipe: RecipeData)
-    func addRecipeFromApi(name: String, uri: String)
+    func addRecipeFromApi(name: String, id: String)
     func updateRecipe(recipe: RecipeData)
     func deleteRecipe(recipe: RecipeData)
     

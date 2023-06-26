@@ -47,25 +47,24 @@ class APIRepositoryManager: APIRepository {
         return recipes
     }
     
-    func getRecipeDataByURI(uri: String) async throws -> RecipeData? {
+    func getRecipeDataByID(id: String) async throws -> RecipeData? {
         var recipeData: RecipeData? = nil
-        let recipesURLAddress = URL(string: "https://api.edamam.com/api/recipes/v2/by-uri")
+        let recipesURLAddress = URL(string: "https://api.edamam.com/api/recipes/v2/\(id)")
         
         if var url = recipesURLAddress {
             url = url.appending(queryItems: [
                     URLQueryItem(name: "type", value: "public"),
                     URLQueryItem(name: "app_id", value: appID),
-                    URLQueryItem(name: "app_key", value: appKey),
-                    URLQueryItem(name: "uri", value: uri)
+                    URLQueryItem(name: "app_key", value: appKey)
                 ]
             )
 
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
-            let response: Response = try await apiManager.request(request)
+            let responseHit: Hit = try await apiManager.request(request)
             
-            if let recipe = response.hits?.first?.recipe {
+            if let recipe = responseHit.recipe {
                 recipeData = RecipeData(
                     id: nil,
                     name: "",
@@ -75,7 +74,7 @@ class APIRepositoryManager: APIRepository {
                     healthLabels: nil,
                     digestData: nil,
                     imageURL: "",
-                    uri: ""
+                    remoteID: nil
                 )
                 
                 let ingredients = recipe.ingredients?.map {
@@ -102,7 +101,7 @@ class APIRepositoryManager: APIRepository {
                 recipeData?.healthLabels = recipe.healthLabels
                 recipeData?.digestData = digest
                 recipeData?.imageURL = recipe.image
-                recipeData?.uri = recipe.uri
+                recipeData?.remoteID = recipe.uri?.getIDFromRecipeURI()
             }
                 
         }
@@ -174,7 +173,7 @@ class APIRepositoryManager: APIRepository {
                         healthLabels: recipe.healthLabels,
                         digestData: digest,
                         imageURL: recipe.image,
-                        uri: recipe.uri
+                        remoteID: recipe.uri?.getIDFromRecipeURI()
                     )
                 )
             }
